@@ -18,7 +18,9 @@ const server = await createServer({
       vite.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith('/api/')) return next()
         try {
-          const origin = 'http://127.0.0.1:' + port
+          // 用浏览器实际访问的 Host 构造请求地址，这样 localhost 与 127.0.0.1
+          // 两种写法都能通过 checkOrigin 的同源校验。
+          const origin = 'http://' + (req.headers.host || '127.0.0.1:' + port)
           const headers = new Headers()
           for (const [key, value] of Object.entries(req.headers)) {
             if (value !== undefined) headers.set(key, Array.isArray(value) ? value.join(', ') : value)
