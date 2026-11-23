@@ -76,6 +76,18 @@ export function requireUser(user, admin = false) {
   if (admin && user.role !== 'admin') throw new AppError(403, '此操作仅限管理员')
 }
 
+// 临时免登录模式：设置 SALTUM_AUTH_DISABLED=1 时，所有请求都以管理员身份处理，
+// 用于线上排障期间跳过登录。移除该变量即恢复正常鉴权。
+export function authDisabled(env = {}) {
+  return String(env.SALTUM_AUTH_DISABLED || '').toLowerCase() === '1'
+}
+
+export function offlineAdmin(env = {}) {
+  return { id: 'offline-admin', username: env.SALTUM_ADMIN_USERNAME || 'chenfeng',
+    displayName: env.SALTUM_ADMIN_NAME || '管理员', role: 'admin', active: true,
+    passwordHash: '', created_at: new Date(0).toISOString() }
+}
+
 async function reserveLoginAttempt(store, clientIp) {
   const now = Date.now()
   const window = Math.floor(now / (15 * 60 * 1000))

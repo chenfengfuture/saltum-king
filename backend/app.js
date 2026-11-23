@@ -1,7 +1,7 @@
 import { AppError } from './lib/errors.js'
 import { checkOrigin, errorResponse, jsonResponse, readJson, requestId } from './lib/http.js'
 import { openStore } from './lib/storage.js'
-import { login, logout, currentUser, requireUser, publicUser, members, createMember, updateMember, changePassword, cleanupSessions } from './lib/auth.js'
+import { login, logout, currentUser, requireUser, publicUser, members, createMember, updateMember, changePassword, cleanupSessions, authDisabled, offlineAdmin } from './lib/auth.js'
 import { collection, createItem, getItem, updateItem, deleteItem } from './lib/records.js'
 
 export function createHandler({ storeFactory = openStore } = {}) {
@@ -24,8 +24,9 @@ export function createHandler({ storeFactory = openStore } = {}) {
       if (path === '/api/v1/auth/logout' && method === 'POST') {
         return jsonResponse(null, id, 200, { 'Set-Cookie': await logout(store, context) })
       }
-      const user = await currentUser(store, request)
-      if (path === '/api/v1/auth/me' && method === 'GET') return jsonResponse({ user: user ? publicUser(user) : null }, id)
+      const sessionUser = await currentUser(store, request)
+      const user = sessionUser || (authDisabled(env) ? offlineAdmin(env) : null)
+      if (path === '/api/v1/auth/me' && method === 'GET') return jsonResponse({ user: user ? publicUser(user) : null, authDisabled: authDisabled(env) }, id)
       requireUser(user)
       if (path === '/api/v1/auth/password' && method === 'POST') {
         await changePassword(store, user, await readJson(request, 4096))

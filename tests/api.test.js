@@ -50,7 +50,7 @@ test('health is public; every data endpoint requires a server session', async (t
   for (const endpoint of ['/looks', '/catalog', '/members', '/image-jobs', '/image-products']) {
     assert.equal((await admin.call(endpoint)).status, 401)
   }
-  assert.deepEqual((await admin.call('/auth/me')).data, { user: null })
+  assert.deepEqual((await admin.call('/auth/me')).data, { user: null, authDisabled: false })
   const result = await admin.call('/looks', 'GET', undefined, { authorization: 'Bearer ignored' })
   assert.equal(result.status, 401)
   assert.equal(result.headers.get('cache-control'), 'no-store')
@@ -227,4 +227,16 @@ test('concurrent password reset cannot reactivate a disabled member', async (t) 
   assert.equal((await alice.login('alice', 'Concurrent-reset-password-28')).status, 401)
   await admin.call('/members/alice', 'PATCH', { active: true })
   assert.equal((await alice.login('alice', 'Concurrent-reset-password-28')).status, 200)
+})
+
+test('temporary no-login mode serves an admin session and keeps writes working', async (t) => {
+  const { env, client } = await setup(t)
+  env.SALTUM_AUTH_DISABLED = '1'
+  const guest = client()
+  const me = await guest.call('/auth/me')
+  assert.equal(me.status, 200)
+  assert.equal(me.data.user.role, 'admin')
+  assert.equal(me.data.authDisabled, true)
+  assert.equal((await guest.call('/catalog')).status, 200)
+  assert.equal((await guest.call('/catalog', 'POST', product)).status, 201)
 })
