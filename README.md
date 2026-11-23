@@ -23,7 +23,7 @@ npm ci
 Copy-Item .env.example .env.local
 ~~~
 
-编辑 .env.local，设置自己的 SALTUM_ADMIN_USERNAME 和 SALTUM_ADMIN_PASSWORD（10–128 位）；不要使用示例/测试账号作为正式账号。然后：
+编辑 .env.local，设置自己的 SALTUM_ADMIN_USERNAME 和 SALTUM_ADMIN_PASSWORD（管理员密码 6–128 位）；不要使用示例/测试账号作为正式账号。然后：
 
 ~~~powershell
 npm run dev:local
@@ -50,7 +50,7 @@ npm run dev 是提供给 EdgeOne 本地开发代理的 Vite 前端命令，单�
 | 环境变量 | 作用 |
 | --- | --- |
 | SALTUM_ADMIN_USERNAME | 初始管理员账号，3–64 位字母、数字或 . _ @ + - |
-| SALTUM_ADMIN_PASSWORD | 首次登录初始化用密码，10–128 位，不得使用 VITE_ 前缀 |
+| SALTUM_ADMIN_PASSWORD | 首次登录初始化用密码，6–128 位（成员密码仍要求 10–128 位），不得使用 VITE_ 前缀 |
 | SALTUM_ADMIN_NAME | 管理员显示名称，默认「管理员」 |
 | SALTUM_BLOB_STORE | Blob 命名空间，默认 saltum-data |
 | SALTUM_SESSION_HOURS | 会话有效小时数，默认 12，范围 1–168 |

@@ -94,7 +94,7 @@ async function bootstrapAdmin(store, env, username, suppliedPassword) {
   if (!env.SALTUM_ADMIN_USERNAME || !env.SALTUM_ADMIN_PASSWORD) return null
   const configured = accountName(env.SALTUM_ADMIN_USERNAME)
   if (username !== configured) return null
-  password(env.SALTUM_ADMIN_PASSWORD)
+  password(env.SALTUM_ADMIN_PASSWORD, { min: 6 })
   if (!timingSafeEqual(Buffer.from(digest(suppliedPassword)), Buffer.from(digest(env.SALTUM_ADMIN_PASSWORD)))) return null
   const user = { id: randomUUID(), username: configured,
     displayName: text(env.SALTUM_ADMIN_NAME || '管理员', '姓名', { max: 60 }),

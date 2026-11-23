@@ -13,8 +13,8 @@ export function accountName(value) {
   return result
 }
 
-export function password(value) {
-  requireCondition(typeof value === 'string' && value.length >= 10 && value.length <= 128, '密码需为 10–128 位')
+export function password(value, { min = 10 } = {}) {
+  requireCondition(typeof value === 'string' && value.length >= min && value.length <= 128, '密码需为 ' + min + '–128 位')
   return value
 }
 
