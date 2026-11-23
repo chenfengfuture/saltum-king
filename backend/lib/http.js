@@ -25,9 +25,24 @@ export function errorResponse(error, id) {
 }
 
 // Cookie authentication requires same-origin state-changing requests.
+// The public origin comes from SALTUM_APP_ORIGIN when configured; otherwise it is
+// derived from the request's forwarded host headers, because a Node function platform
+// may hand us an internal request.url that never matches the browser's Origin.
+function expectedOrigin(request, env) {
+  if (env.SALTUM_APP_ORIGIN) return new URL(env.SALTUM_APP_ORIGIN).origin
+  const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
+  if (forwardedHost) {
+    const host = forwardedHost.split(',')[0].trim()
+    const forwardedProto = (request.headers.get('x-forwarded-proto') || '').split(',')[0].trim()
+    const proto = forwardedProto || (/^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(host) ? 'http' : 'https')
+    return proto + '://' + host
+  }
+  return new URL(request.url).origin
+}
+
 export function checkOrigin(request, env) {
   if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return
-  const expected = new URL(env.SALTUM_APP_ORIGIN || request.url).origin
+  const expected = expectedOrigin(request, env)
   const actual = request.headers.get('origin')
   if (actual !== expected || request.headers.get('sec-fetch-site') === 'cross-site') {
     throw new AppError(403, '请求来源不被允许')
